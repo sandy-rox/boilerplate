@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch NestJS Program",
+      "runtimeExecutable": "node",
+      "args": ["-r", "ts-node/register", "src/main.ts"],
+      "sourceMaps": true,
+      "cwd": "${workspaceFolder}",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to Running NestJS Process",
+      "processId": "${command:PickProcess}",
+      "restart": true
+    }
+  ]
+}
