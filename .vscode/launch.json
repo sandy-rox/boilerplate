@@ -13,7 +13,8 @@
       "env": {
         "NODE_ENV": "development"
       },
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "preLaunchTask": "Kill Process on Port 3000"
     },
     {
       "type": "node",

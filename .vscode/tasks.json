@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Kill Process on Port 3000",
+      "type": "shell",
+      "command": "npx cross-port-killer 3000",
+      "problemMatcher": [],
+      "group": "build",
+      "detail": "Kills the process using port 3000"
+    }
+  ]
+}
