@@ -14,14 +14,16 @@
         "NODE_ENV": "development"
       },
       "console": "integratedTerminal",
-      "preLaunchTask": "Kill Process on Port 3000"
+      "preLaunchTask": "npx cross-port-killer 3000"
     },
     {
       "type": "node",
       "request": "attach",
-      "name": "Attach to Running NestJS Process",
+      "name": "Debug Server",
       "processId": "${command:PickProcess}",
-      "restart": true
+      "sourceMaps": true,
+      "restart": true,
+			"port": 9229
     }
   ]
 }
