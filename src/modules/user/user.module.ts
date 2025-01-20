@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
-import { LoggerService } from 'src/common/logger/logger.service'; 
+import { LoggerService } from 'src/common/logger/logger.service';
 
 @Module({
   providers: [UserService, LoggerService],

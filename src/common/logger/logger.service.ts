@@ -1,63 +1,71 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import {
   createLogger,
   transports,
   format,
   Logger as WinstonLogger,
-  addColors,
 } from 'winston';
 import * as fs from 'fs';
 import * as path from 'path';
-import { v4 as uuidv4 } from 'uuid'; // Import uuid to generate unique request IDs
 
-// Ensure the logs directory exists
 const logDir = 'logs';
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
 }
 
 @Injectable()
-export class LoggerService {
-  private logger: WinstonLogger;
+export class LoggerService implements OnApplicationShutdown {
+  private loggers: Map<string, WinstonLogger> = new Map();
 
   constructor() {
-    // Initialize Winston logger with a default console transport
-    this.logger = createLogger({
+    const originalLog = console.log;
+    console.log = (...args: any[]) => {
+      const requestId = args[0]?.requestId || 'global';
+      const message = args
+        .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg) : arg))
+        .join(' ');
+      this.logMessage(requestId, 'info', message);
+      originalLog.apply(console, args);
+    };
+  }
+
+  private createLoggerForRequest(requestId: string): WinstonLogger {
+    const requestLogFile = path.join(logDir, `${requestId}.log`);
+    const logger = createLogger({
       transports: [
-        new transports.Console({
-          level: 'debug',
-          format: format.combine(
-            format.colorize(),
-            format.timestamp(),
-            format.simple(),
-          ),
+        new transports.File({
+          filename: requestLogFile,
+          level: 'info',
+          format: format.combine(format.timestamp(), format.json()),
         }),
       ],
     });
+
+    this.loggers.set(requestId, logger);
+    return logger;
   }
 
-  // Creates a log file dynamically based on request ID
-  createRequestLogFile(requestId: string): void {
-    const requestLogFile = path.join(logDir, `${requestId}.log`);
-    if (!fs.existsSync(requestLogFile)) {
-      fs.writeFileSync(requestLogFile, ''); // Create an empty file for the request logs
-    }
-    // Add the dynamic file transport for this specific request ID
-    const requestTransport = new transports.File({
-      filename: requestLogFile,
-      level: 'info', // Adjust log level as necessary
-      format: format.combine(format.timestamp(), format.json()),
-    });
-    this.logger.add(requestTransport);
+  private getOrCreateLogger(requestId: string): WinstonLogger {
+    return (
+      this.loggers.get(requestId) || this.createLoggerForRequest(requestId)
+    );
   }
 
-  // Log info-level messages to the dynamic file
-  logRequestMessage(requestId: string, message: string): void {
-    this.logger.info(message, { requestId });
+  logMessage(requestId: string, level: string, message: string): void {
+    const logger = this.getOrCreateLogger(requestId);
+    logger.log(level, message);
   }
 
-  // Log error-level messages to the dynamic file
-  logRequestError(requestId: string, message: string, error?: any): void {
-    this.logger.error(message, { requestId, error });
+  logError(requestId: string, message: string, error?: any): void {
+    const logger = this.getOrCreateLogger(requestId);
+    logger.error(message, { error });
+  }
+
+  removeLogger(requestId: string): void {
+    this.loggers.delete(requestId);
+  }
+
+  onApplicationShutdown(): void {
+    this.loggers.clear();
   }
 }

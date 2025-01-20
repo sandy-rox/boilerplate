@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { LoggerService } from 'src/common/logger/logger.service'; 
+import { LoggerService } from 'src/common/logger/logger.service';
 
 // This should be a real class/interface representing a user entity
 export type User = {
@@ -36,14 +36,16 @@ export class UserService {
   }
   async findAll(requestId: string): Promise<User[]> {
     try {
-      this.logger.logRequestMessage(
+      this.logger.logMessage(
         requestId,
+        'info',
         `Creating user with data: ${JSON.stringify(this.users)}`,
       );
+      console.log({ requestId }, 'This is a test log message.');
       return this.users;
     } catch (error) {
-      this.logger.logRequestError(requestId, 'Error creating user', error);
-      throw error;      
+      this.logger.logError(requestId, 'Error creating user', error);
+      throw error;
     }
   }
 }

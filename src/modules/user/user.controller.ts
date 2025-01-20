@@ -11,10 +11,8 @@ export class UserController {
   @Get()
   findAll(@Req() req: Request): Promise<User[]> {
     const requestId = req['requestId'];
-    this.logger.logRequestMessage(
-      requestId,
-      `Controller Creating user with data:}`,
-    );
+    console.log(requestId, 'Controller: Creating user with data');
+    this.logger.logMessage(requestId, 'info', 'Processing user creation...');
     return this.userService.findAll(requestId);
   }
 
